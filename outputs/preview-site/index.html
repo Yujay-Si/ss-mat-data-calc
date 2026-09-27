@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>材料数据计算工具</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>材料数据计算工具</h1>
+    </header>
+
+    <nav class="view-nav" aria-label="功能切换">
+      <button type="button" class="view-tab active" data-view="single" aria-current="page">单次计算</button>
+      <button type="button" class="view-tab" data-view="batch">批量计算</button>
+      <button type="button" class="view-tab" data-view="history">历史记录</button>
+      <button type="button" class="view-tab" data-view="parameters">参数维护</button>
+    </nav>
+
+    <div class="workspace" id="single-view">
+      <section class="card input-card" aria-labelledby="input-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <h2 id="input-title">材料参数</h2>
+        </div>
+        <form id="calculator-form" novalidate>
+          <div class="field-row">
+            <label class="field" for="material">
+              <span>材质</span>
+              <select id="material" name="material" required>
+                <option value="410">410</option>
+                <option value="201" selected>201</option>
+                <option value="304">304</option>
+                <option value="316">316</option>
+              </select>
+            </label>
+            <label class="field" for="mode">
+              <span>冲料方式</span>
+              <select id="mode" name="mode" required>
+                <option value="single">单排</option>
+                <option value="double" selected>双排</option>
+              </select>
+            </label>
+          </div>
+          <div class="field-row">
+            <label class="field" for="thickness">
+              <span>厚度 <small>mm</small></span>
+              <input id="thickness" name="thickness" type="number" inputmode="decimal" min="0" step="any" placeholder="例如 0.3" required>
+            </label>
+            <label class="field" for="width">
+              <span>宽度 <small>mm</small></span>
+              <input id="width" name="width" type="number" inputmode="decimal" min="0" step="any" placeholder="例如 600" required>
+            </label>
+          </div>
+          <label class="field" for="weight">
+            <span>材料重量 <small>kg</small></span>
+            <input id="weight" name="weight" type="number" inputmode="decimal" min="0" step="any" placeholder="例如 100" required>
+          </label>
+          <fieldset class="formula-fieldset">
+            <legend>数量采用的单重公式</legend>
+            <label class="choice"><input type="radio" name="formula" value="1" checked><span><strong>第 1 套</strong><small>圆片密度算法公式 · 默认</small></span></label>
+            <label class="choice"><input type="radio" name="formula" value="2"><span><strong>第 2 套</strong><small>圆片密度高级算法公式</small></span></label>
+            <label class="choice" id="sheet-formula-choice" hidden><input type="radio" name="formula" value="3"><span><strong>第 3 套</strong><small>方片密度算法公式 · 材料总重直接计算</small></span></label>
+          </fieldset>
+          <button type="submit" class="primary-button">计算预计数量 <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+
+      <div class="right-column">
+        <section class="card empty-card" id="empty-panel" aria-label="结果说明">
+          <span class="empty-symbol" aria-hidden="true">◎</span>
+          <h2>等待计算</h2>
+          <p>填写左侧材料参数，计算后将在这里显示数量及复核数据。</p>
+        </section>
+        <p id="error-panel" class="error-panel" role="alert" tabindex="-1" hidden></p>
+        <p id="single-save-status" class="status-panel" role="status" hidden></p>
+        <section class="card result-card" id="result-panel" aria-labelledby="result-title" tabindex="-1" hidden>
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <h2 id="result-title">计算结果</h2>
+          </div>
+          <div class="quantity-block">
+            <span>预计圆片数量</span>
+            <strong><span id="result-quantity"></span><small>个</small></strong>
+            <p id="result-quantity-basis">使用所选公式的未舍入单重计算，最终向下取整</p>
+          </div>
+          <h3>本次输入</h3>
+          <dl class="data-grid">
+            <div><dt>材质</dt><dd id="result-material"></dd></div>
+            <div><dt>冲料方式</dt><dd id="result-mode"></dd></div>
+            <div><dt>厚度</dt><dd id="result-thickness"></dd></div>
+            <div><dt>宽度</dt><dd id="result-width"></dd></div>
+            <div><dt>材料重量</dt><dd id="result-weight"></dd></div>
+            <div><dt>最终剪口</dt><dd id="result-cut"></dd></div>
+          </dl>
+          <h3>计算依据</h3>
+          <dl class="data-grid">
+            <div><dt id="result-factor-label">冲料圆片比例系数</dt><dd id="result-factor"></dd></div>
+            <div><dt id="result-weight-label">可用重量</dt><dd id="result-usable-weight"></dd></div>
+            <div><dt>第 1 套单重</dt><dd id="result-radius-weight"></dd></div>
+            <div><dt>第 2 套单重</dt><dd id="result-square-weight"></dd></div>
+            <div id="result-sheet-weight-row" hidden><dt>第 3 套方片单重</dt><dd id="result-sheet-weight"></dd></div>
+            <div><dt>选用公式</dt><dd id="result-selected"></dd></div>
+            <div><dt>选用密度系数</dt><dd id="result-material-factor"></dd></div>
+            <div><dt>公式版本</dt><dd id="result-version"></dd></div>
+            <div><dt>参数版本</dt><dd id="result-parameter-version"></dd></div>
+            <div><dt>计算时间</dt><dd id="result-time"></dd></div>
+          </dl>
+          <div class="action-row result-actions">
+            <button type="button" class="secondary-button" id="single-export-csv">导出 CSV</button>
+            <button type="button" class="secondary-button" id="single-export-xlsx">导出 XLSX</button>
+            <button type="button" class="secondary-button" id="single-print">打印结果</button>
+          </div>
+        </section>
+        <aside class="note-card">
+          <strong>计算说明</strong>
+          <p>双排剪口先用宽度除以 1.87，单排直接取宽度；两种方式都将剪口向下取到 5 mm 的倍数。单重展示保留四位小数。单排第 3 套按方片单重用材料总重直接换算，不乘单排冲料圆片比例系数。</p>
+        </aside>
+      </div>
+    </div>
+
+    <section class="card feature-card" id="batch-view" aria-labelledby="batch-title" hidden>
+      <div class="section-heading"><span class="section-number">03</span><h2 id="batch-title">批量计算</h2></div>
+      <p class="feature-intro">按模板填写数据，支持粘贴 CSV 或表格内容，也可导入 CSV、XLSX。单重公式填 1（圆片密度算法）或 2（圆片密度高级算法）；仅单排可填 3（方片密度算法）。旧版文件导入前需互换公式 1、2 的编号。单次最多 500 条，文件不超过 2 MB。</p>
+      <div class="action-row">
+        <button type="button" class="secondary-button" id="download-csv-template">下载 CSV 模板</button>
+        <button type="button" class="secondary-button" id="download-xlsx-template">下载 XLSX 模板</button>
+      </div>
+      <label class="field" for="batch-text"><span>粘贴数据 <small>首行为模板表头，可直接粘贴 Excel 表格</small></span>
+        <textarea id="batch-text" rows="8" placeholder="材质,厚度(mm),宽度(mm),材料重量(kg),冲料方式,单重公式&#10;201,0.3,600,100,双排,2"></textarea>
+      </label>
+      <label class="field" for="batch-file"><span>或选择文件 <small>CSV / XLSX</small></span><input id="batch-file" type="file" accept=".csv,.xlsx"></label>
+      <button type="button" class="primary-button batch-button" id="run-batch">计算批量数据 <span aria-hidden="true">→</span></button>
+      <p class="status-panel" id="batch-status" role="status" hidden></p>
+      <div id="batch-results" hidden>
+        <h3>逐行结果</h3>
+        <div class="action-row" id="batch-output-actions" hidden>
+          <button type="button" class="secondary-button" id="batch-export-csv">导出有效行 CSV</button>
+          <button type="button" class="secondary-button" id="batch-export-xlsx">导出有效行 XLSX</button>
+          <button type="button" class="secondary-button" id="batch-print">打印有效行</button>
+        </div>
+        <div class="table-scroll"><table class="results-table"><thead><tr><th>行号</th><th>材质</th><th>厚度(mm)</th><th>宽度(mm)</th><th>重量(kg)</th><th>冲料方式</th><th>剪口(mm)</th><th>预计圆片数量(个)</th><th>状态</th></tr></thead><tbody id="batch-results-body"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="card feature-card" id="history-view" aria-labelledby="history-title" hidden>
+      <div class="section-heading"><span class="section-number">04</span><h2 id="history-title">历史记录</h2></div>
+      <p class="feature-intro">结果仅保存在当前设备的当前浏览器。最多 500 条；建议定期备份，浏览器清理数据或移动网页位置可能使历史无法读取。</p>
+      <div class="history-controls">
+        <label class="field" for="history-filter"><span>筛选历史 <small>材质、方式、数量或日期</small></span><input id="history-filter" type="search" placeholder="输入关键词"></label>
+        <button type="button" class="secondary-button" id="backup-history">备份历史 JSON</button>
+      </div>
+      <label class="field restore-field" for="restore-history"><span>恢复历史备份 <small>合并导入，不覆盖已有记录；导入前需确认</small></span><input id="restore-history" type="file" accept=".json,application/json"></label>
+      <p id="history-status" class="status-panel" role="status" hidden></p>
+      <p id="history-count" class="history-count"></p>
+      <div id="history-list" class="history-list"></div>
+    </section>
+    <section class="card feature-card" id="parameters-view" aria-labelledby="parameters-title" hidden>
+      <div class="section-heading"><span class="section-number">05</span><h2 id="parameters-title">参数维护</h2></div>
+      <p class="feature-intro">当前浏览器的所有使用者均可修改以下数值。保存前将显示旧值与新值并要求确认；改动只影响后续计算，历史结果保持原快照。</p>
+      <p id="parameter-version-info" class="parameter-version-info"></p>
+      <form id="parameter-form" novalidate>
+        <div id="parameter-fields" class="parameter-fields"></div>
+        <p class="fixed-rules">固定规则：剪口向下取 5 mm 的倍数、圆周率参数 3.14、公式运算结构及除数单位均不可修改。</p>
+        <div class="action-row">
+          <button type="submit" class="primary-button parameter-save">核对并保存参数 <span aria-hidden="true">→</span></button>
+          <button type="button" class="secondary-button" id="restore-default-parameters">恢复出厂默认值</button>
+        </div>
+      </form>
+      <p id="parameter-status" class="status-panel" role="status" hidden></p>
+    </section>
+    <section id="print-area" aria-label="打印内容"></section>
+  </main>
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="calculation.js"></script>
+  <script src="parameter-store.js"></script>
+  <script src="result-output.js"></script>
+  <script src="batch-data.js"></script>
+  <script src="history-store.js"></script>
+  <script src="workflow.js"></script>
+  <script src="parameter-ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

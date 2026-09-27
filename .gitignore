@@ -1,0 +1,31 @@
+# Local records and generated user data
+/work/
+/exports/
+/downloads/
+*历史备份*.json
+*.bak
+*.bak-*
+*.log
+*.tmp
+
+# Private inputs that are archived outside this repository
+/材料参数计算公式及要求.txt
+/docs/计算样例与核对记录.md
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies, build output, and OS files
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+Thumbs.db
+desktop.ini
