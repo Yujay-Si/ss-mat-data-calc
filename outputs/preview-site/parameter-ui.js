@@ -65,6 +65,48 @@
     return store.validateValues(values);
   }
 
+  byId('backup-parameters').addEventListener('click', () => {
+    try {
+      const blob = new Blob([JSON.stringify(store.exportBackup(), null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = '材料计算参数备份.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      global.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showStatus('已生成参数 JSON 备份文件。');
+    } catch (error) {
+      showStatus(messageFrom(error), true);
+    }
+  });
+
+  byId('restore-parameters').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      if (file.size > 100000) throw new Error('参数备份文件超过 100 KB 上限。');
+      const backup = JSON.parse(await file.text());
+      if (!backup || backup.format !== 'material-calculator-parameters' || backup.version !== 1) throw new Error('参数备份格式无效。');
+      const incoming = store.validateValues(backup.values);
+      const current = store.readState();
+      if (current.revision !== loadedRevision) throw new Error('参数已在其他页面更新，请刷新参数后重试。');
+      const before = store.editableValues(current.parameters);
+      const changes = store.FIELDS.filter(field => before[field.key] !== incoming[field.key])
+        .map(field => `${field.label}：${before[field.key]} → ${incoming[field.key]}`);
+      if (changes.length === 0) throw new Error('备份参数与当前参数相同。');
+      if (!global.confirm(`确认导入以下参数变化？新参数只影响后续计算。\n\n${changes.join('\n')}`)) return;
+      const saved = store.importBackup(backup, loadedRevision);
+      render();
+      showStatus(`已导入参数，本机参数 v${saved.revision}；历史计算结果未修改。`);
+    } catch (error) {
+      showStatus(error instanceof SyntaxError ? 'JSON 备份文件格式错误。' : messageFrom(error), true);
+    } finally {
+      event.target.value = '';
+    }
+  });
+
   byId('parameter-form').addEventListener('submit', event => {
     event.preventDefault();
     try {

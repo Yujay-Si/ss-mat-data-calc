@@ -147,7 +147,7 @@
 
     <section class="card feature-card" id="history-view" aria-labelledby="history-title" hidden>
       <div class="section-heading"><span class="section-number">04</span><h2 id="history-title">历史记录</h2></div>
-      <p class="feature-intro">结果仅保存在当前设备的当前浏览器。最多 500 条；建议定期备份，浏览器清理数据或移动网页位置可能使历史无法读取。</p>
+      <p class="feature-intro">结果仅保存在当前应用的数据目录。最多 500 条；建议定期备份，更换浏览器或切换到桌面版时需手动迁移。</p>
       <div class="history-controls">
         <label class="field" for="history-filter"><span>筛选历史 <small>材质、方式、数量或日期</small></span><input id="history-filter" type="search" placeholder="输入关键词"></label>
         <button type="button" class="secondary-button" id="backup-history">备份历史 JSON</button>
@@ -159,7 +159,7 @@
     </section>
     <section class="card feature-card" id="parameters-view" aria-labelledby="parameters-title" hidden>
       <div class="section-heading"><span class="section-number">05</span><h2 id="parameters-title">参数维护</h2></div>
-      <p class="feature-intro">当前浏览器的所有使用者均可修改以下数值。保存前将显示旧值与新值并要求确认；改动只影响后续计算，历史结果保持原快照。</p>
+      <p class="feature-intro">当前应用的所有使用者均可修改以下数值。保存前将显示旧值与新值并要求确认；改动只影响后续计算，历史结果保持原快照。</p>
       <p id="parameter-version-info" class="parameter-version-info"></p>
       <form id="parameter-form" novalidate>
         <div id="parameter-fields" class="parameter-fields"></div>
@@ -169,6 +169,10 @@
           <button type="button" class="secondary-button" id="restore-default-parameters">恢复出厂默认值</button>
         </div>
       </form>
+      <div class="action-row">
+        <button type="button" class="secondary-button" id="backup-parameters">备份参数 JSON</button>
+        <label class="field restore-field" for="restore-parameters"><span>恢复参数备份 <small>导入前核对差异并确认</small></span><input id="restore-parameters" type="file" accept=".json,application/json"></label>
+      </div>
       <p id="parameter-status" class="status-panel" role="status" hidden></p>
     </section>
     <section id="print-area" aria-label="打印内容"></section>

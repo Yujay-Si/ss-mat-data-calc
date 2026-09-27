@@ -65,7 +65,7 @@
     try {
       raw = global.localStorage.getItem(STORAGE_KEY);
     } catch (error) {
-      throw new Error('无法读取本地参数，请检查浏览器存储权限。');
+      throw new Error('无法读取本地参数，请检查当前应用的存储权限。');
     }
     if (raw === null) return { revision: 0, updatedAt: null, parameters: buildParameters(editableValues(defaults), 0, null) };
     try {
@@ -89,7 +89,7 @@
     try {
       global.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch (error) {
-      throw new Error('参数保存失败：浏览器存储不可用或空间不足。原参数未改变。');
+      throw new Error('参数保存失败：本地存储不可用或空间不足。原参数未改变。');
     }
     return readState();
   }
@@ -98,5 +98,17 @@
     return writeValues(editableValues(defaults), expectedRevision);
   }
 
-  global.ParameterStore = Object.freeze({ STORAGE_KEY, FIELDS, valueAt, editableValues, validateValues, readState, writeValues, restoreDefaults });
+  function exportBackup() {
+    const state = readState();
+    return { format: 'material-calculator-parameters', version: 1, exportedAt: new Date().toISOString(), values: editableValues(state.parameters) };
+  }
+
+  function importBackup(backup, expectedRevision) {
+    if (!backup || backup.format !== 'material-calculator-parameters' || backup.version !== 1) {
+      throw new Error('参数备份格式无效，未修改当前参数。');
+    }
+    return writeValues(validateValues(backup.values), expectedRevision);
+  }
+
+  global.ParameterStore = Object.freeze({ STORAGE_KEY, FIELDS, valueAt, editableValues, validateValues, readState, writeValues, restoreDefaults, exportBackup, importBackup });
 })(typeof window === 'undefined' ? globalThis : window);

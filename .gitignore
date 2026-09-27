@@ -23,6 +23,7 @@
 
 # Dependencies, build output, and OS files
 node_modules/
+out/
 dist/
 build/
 coverage/

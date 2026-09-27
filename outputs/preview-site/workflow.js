@@ -159,7 +159,7 @@
     const status = byId('single-save-status');
     try {
       historyStore.addResults([result]);
-      setStatus(status, '计算结果已保存到当前浏览器的历史记录。');
+      setStatus(status, '计算结果已保存到当前应用的历史记录。');
       renderHistory();
     } catch (error) {
       setStatus(status, errorMessage(error), true);

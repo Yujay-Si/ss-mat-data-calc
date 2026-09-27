@@ -5,11 +5,24 @@
   const MAX_RECORDS = 500;
 
   function validRecord(record) {
-    return record && typeof record.id === 'string' && record.id.length > 0 &&
-      record.result && record.result.input && record.result.parameters &&
-      typeof record.result.formulaVersion === 'string' &&
-      Number.isSafeInteger(record.result.quantity) && record.result.quantity >= 0 &&
-      Number.isFinite(record.result.cut) && Number.isFinite(record.result.selectedUnitWeight);
+    if (!record || typeof record.id !== 'string' || !record.id || record.id.length > 200 || !record.result) return false;
+    const result = record.result;
+    const input = result.input;
+    const parameters = result.parameters;
+    return input && parameters &&
+      ['410', '201', '304', '316'].includes(input.material) &&
+      ['single', 'double'].includes(input.mode) &&
+      [1, 2, 3].includes(Number(input.formula)) &&
+      Number.isFinite(input.thickness) && input.thickness > 0 &&
+      Number.isFinite(input.width) && input.width > 0 &&
+      Number.isFinite(input.weight) && input.weight > 0 &&
+      typeof result.formulaVersion === 'string' && /^\d+\./.test(result.formulaVersion) &&
+      typeof result.calculatedAt === 'string' && !Number.isNaN(Date.parse(result.calculatedAt)) &&
+      Number.isSafeInteger(result.quantity) && result.quantity >= 0 &&
+      Number.isFinite(result.cut) && result.cut > 0 &&
+      Number.isFinite(result.selectedUnitWeight) && result.selectedUnitWeight > 0 &&
+      ['squareFactor', 'radiusFactor', 'widthDivisor', 'usableFactor', 'cutStep', 'pi']
+        .every(key => Number.isFinite(parameters[key]) && parameters[key] > 0);
   }
 
   function readRecords() {
@@ -17,7 +30,7 @@
     try {
       raw = global.localStorage.getItem(STORAGE_KEY);
     } catch (error) {
-      throw new Error('无法读取浏览器历史存储，请检查浏览器的本地数据权限。');
+      throw new Error('无法读取本地历史存储，请检查当前应用的本地数据权限。');
     }
     if (raw === null) return [];
     try {
@@ -35,7 +48,7 @@
     try {
       global.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     } catch (error) {
-      throw new Error('历史保存失败：浏览器存储不可用或空间不足。计算结果仍可查看。');
+      throw new Error('历史保存失败：本地存储不可用或空间不足。计算结果仍可查看。');
     }
   }
 
