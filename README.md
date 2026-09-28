@@ -1,6 +1,6 @@
 # 材料数据计算工具
 
-这是供工厂人员在本机估算材料可冲圆片数量的离线工具。输入材质、厚度、宽度、重量和冲料方式后，工具按已确认的剪口、单重及数量规则计算，并展示中间值，便于核对。v0.1.1 同时提供 Windows 安装版、便携版和原有离线网页。
+这是供工厂人员在本机估算材料可冲圆片数量的离线工具。输入材质、厚度、宽度、重量和冲料方式后，工具按已确认的剪口、单重及数量规则计算，并展示中间值，便于核对。v0.1.2 同时提供 Windows 安装版、便携版和原有离线网页。
 
 ## 主要功能
 
@@ -12,14 +12,16 @@
 
 ## Windows 桌面版
 
-从 [GitHub Releases](https://github.com/Yujay-Si/ss-mat-data-calc/releases/tag/v0.1.1) 下载：
+从 [GitHub Releases](https://github.com/Yujay-Si/ss-mat-data-calc/releases/latest) 下载：
 
-1. **安装版**：双击 `SSMaterialDataCalc-0.1.1-Setup.exe` 安装，再从开始菜单或桌面快捷方式打开。
-2. **便携版**：解压 `SSMaterialDataCalc-0.1.1-win32-x64.zip` 的全部内容，双击其中的 `SSMaterialDataCalc.exe`。不要只复制 EXE，配套文件也是运行所需。
+1. **安装版**：双击 `SSMaterialDataCalc-0.1.2-Setup.exe` 安装，再从开始菜单或桌面快捷方式打开。
+2. **便携版**：解压 `SSMaterialDataCalc-0.1.2-win32-x64.zip` 的全部内容，双击其中的 `SSMaterialDataCalc.exe`。不要只复制 EXE，配套文件也是运行所需。
 
 两版均无需账号和服务器，可离线运行。桌面版数据保存在 Windows 用户配置目录的 `SSMaterialDataCalc` 应用数据中；安装版和便携版在同一 Windows 账户下使用同一份数据。网页和桌面版不会自动同步。请先在原网页的“历史记录”和“参数维护”分别导出 JSON，再到桌面版分别导入。导入参数只影响之后的新计算，旧历史结果保留原快照。
 
-桌面程序尚未进行代码签名，Windows 可能显示“未知发布者”提示。当前版本不提供自动更新；升级时下载新版安装包或便携包，重要数据请先导出备份。
+安装版启动后约 12 秒及运行期间每小时检查一次 GitHub 正式 Release；有新版时自动下载，下载完成后询问是否立即重启安装。选择“稍后”可继续工作，更新会在下次启动时生效。便携版按相同频率检查；发现新版便携包后仅提示打开下载页，需自行下载并解压。计算功能始终可离线使用，断网时仅无法检查更新。v0.1.1 尚无更新检查代码，使用旧版的用户必须手动安装 v0.1.2 一次，之后安装版才能自动更新。
+
+桌面程序尚未进行代码签名，Windows 可能显示“未知发布者”提示。升级前建议分别导出历史记录和参数 JSON 备份。
 
 ## 离线网页
 
@@ -33,7 +35,7 @@
 
 ## 从源码构建桌面版
 
-在 Windows x64 上安装 Node.js 和 npm，然后运行 `npm ci`、`npm test`、`npm run test:desktop`、`npm run make`。桌面自检会检查计算、XLSX、参数备份下载、PDF 打印和重启后的数据留存。构建脚本会在项目路径含中文时暂存源码到系统临时目录再运行 Squirrel，安装包和便携压缩包最终输出至 `out/make/`。开发依赖和构建产物不提交到仓库。
+在 Windows x64 上安装 Node.js 和 npm，然后运行 `npm ci`、`npm test`、`npm run test:desktop`、`npm run make`、`npm run test:release-assets`。桌面自检会检查计算、XLSX、参数备份下载、PDF 打印和重启后的数据留存。构建脚本会在项目路径含中文时暂存源码到系统临时目录再运行 Squirrel，安装包和便携压缩包最终输出至 `out/make/`。每个正式 GitHub Release 除安装包和便携 ZIP 外，还须附上构建生成的 `RELEASES` 与对应 `*-full.nupkg`，且版本号、文件大小和哈希必须匹配；缺少这些文件会导致安装版更新失败。开发依赖和构建产物不提交到仓库。
 
 ## 输入输出示例
 

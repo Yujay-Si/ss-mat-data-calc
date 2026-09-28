@@ -3,6 +3,7 @@
 const { app, BrowserWindow, dialog, protocol, session } = require('electron');
 const { readFile } = require('node:fs/promises');
 const path = require('node:path');
+const { startUpdateChecks } = require('./update');
 
 if (require('electron-squirrel-startup')) app.quit();
 
@@ -52,6 +53,7 @@ app.whenReady().then(() => {
     dialog.showErrorBox('启动失败', `无法加载本地计算页面：${error.message}`);
     app.quit();
   });
+  startUpdateChecks();
 });
 
 app.on('window-all-closed', () => app.quit());
