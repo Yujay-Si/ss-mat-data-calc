@@ -22,7 +22,6 @@
     <div class="workspace" id="single-view">
       <section class="card input-card" aria-labelledby="input-title">
         <div class="section-heading">
-          <span class="section-number">01</span>
           <h2 id="input-title">材料参数</h2>
         </div>
         <form id="calculator-form" novalidate>
@@ -78,7 +77,6 @@
         <p id="single-save-status" class="status-panel" role="status" hidden></p>
         <section class="card result-card" id="result-panel" aria-labelledby="result-title" tabindex="-1" hidden>
           <div class="section-heading">
-            <span class="section-number">02</span>
             <h2 id="result-title">计算结果</h2>
           </div>
           <div class="quantity-block">
@@ -122,7 +120,7 @@
     </div>
 
     <section class="card feature-card" id="batch-view" aria-labelledby="batch-title" hidden>
-      <div class="section-heading"><span class="section-number">03</span><h2 id="batch-title">批量计算</h2></div>
+      <div class="section-heading"><h2 id="batch-title">批量计算</h2></div>
       <p class="feature-intro">按模板填写数据，支持粘贴 CSV 或表格内容，也可导入 CSV、XLSX。单重公式填 1（圆片密度算法）或 2（圆片密度高级算法）；仅单排可填 3（方片密度算法）。旧版文件导入前需互换公式 1、2 的编号。单次最多 500 条，文件不超过 2 MB。</p>
       <div class="action-row">
         <button type="button" class="secondary-button" id="download-csv-template">下载 CSV 模板</button>
@@ -146,7 +144,7 @@
     </section>
 
     <section class="card feature-card" id="history-view" aria-labelledby="history-title" hidden>
-      <div class="section-heading"><span class="section-number">04</span><h2 id="history-title">历史记录</h2></div>
+      <div class="section-heading"><h2 id="history-title">历史记录</h2></div>
       <p class="feature-intro">结果仅保存在当前应用的数据目录。最多 500 条；建议定期备份，更换浏览器或切换到桌面版时需手动迁移。</p>
       <div class="history-controls">
         <label class="field" for="history-filter"><span>筛选历史 <small>材质、方式、数量或日期</small></span><input id="history-filter" type="search" placeholder="输入关键词"></label>
@@ -158,7 +156,7 @@
       <div id="history-list" class="history-list"></div>
     </section>
     <section class="card feature-card" id="parameters-view" aria-labelledby="parameters-title" hidden>
-      <div class="section-heading"><span class="section-number">05</span><h2 id="parameters-title">参数维护</h2></div>
+      <div class="section-heading"><h2 id="parameters-title">参数维护</h2></div>
       <p class="feature-intro">当前应用的所有使用者均可修改以下数值。保存前将显示旧值与新值并要求确认；改动只影响后续计算，历史结果保持原快照。</p>
       <p id="parameter-version-info" class="parameter-version-info"></p>
       <form id="parameter-form" novalidate>

@@ -20,7 +20,6 @@ h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); letter-spacing: -.04em; line-
 .input-card, .result-card { padding: 28px; }
 .section-heading { display: flex; gap: 12px; align-items: center; margin-bottom: 26px; }
 .section-heading h2 { margin: 0; font-size: 20px; }
-.section-number { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 8px; background: #e7efe8; color: #346349; font-size: 12px; font-weight: 700; }
 .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .field { display: grid; gap: 8px; margin-bottom: 18px; font-size: 14px; font-weight: 650; }
 .field small { color: #78847c; font-size: 12px; font-weight: 400; }

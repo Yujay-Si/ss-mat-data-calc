@@ -25,6 +25,12 @@ if (!squirrelStartup) {
 
   app.whenReady().then(() => {
     const checkForUpdates = startUpdateChecks();
+    // Bind view commands to this app window so menu clicks and accelerators have the same target.
+    const viewContents = () => window.isDestroyed() ? null : window.webContents;
+    const changeZoom = step => {
+      const contents = viewContents();
+      if (contents) contents.setZoomLevel(Math.max(-3, Math.min(5, contents.getZoomLevel() + step)));
+    };
     Menu.setApplicationMenu(Menu.buildFromTemplate([
       { label: '文件', submenu: [{ label: '退出', role: 'quit' }] },
       { label: '编辑', submenu: [
@@ -34,17 +40,24 @@ if (!squirrelStartup) {
         { label: '粘贴', role: 'paste' }, { label: '全选', role: 'selectAll' }
       ] },
       { label: '视图', submenu: [
-        { label: '重新加载', role: 'reload' },
+        { label: '重新加载', accelerator: 'CommandOrControl+R', click: () => viewContents()?.reload() },
         { type: 'separator' },
-        { label: '实际大小', role: 'resetZoom' },
-        { label: '放大', role: 'zoomIn' }, { label: '缩小', role: 'zoomOut' },
+        { label: '实际大小', accelerator: 'CommandOrControl+0', click: () => viewContents()?.setZoomLevel(0) },
+        { label: '放大', accelerator: 'CommandOrControl+Plus', click: () => changeZoom(1) },
+        { label: '缩小', accelerator: 'CommandOrControl+-', click: () => changeZoom(-1) },
         { label: '全屏', role: 'togglefullscreen' }
       ] },
       { label: '窗口', submenu: [
         { label: '最小化', role: 'minimize' }, { label: '关闭', role: 'close' }
       ] },
       { label: '帮助', submenu: [
-        { label: '检查更新', click: () => { void checkForUpdates(); } }
+        { label: '检查更新', click: () => { void checkForUpdates(); } },
+        { type: 'separator' },
+        { label: '关于', click: () => { void dialog.showMessageBox(window, {
+          type: 'info', title: '关于 材料数据计算工具', message: `材料数据计算工具 v${app.getVersion()}`,
+          detail: '供工厂人员在本机离线估算材料可冲圆片数量。输入材质、厚度、宽度、重量和冲料方式后，可查看预计数量及复核数据。',
+          buttons: ['确定'], noLink: true
+        }).catch(error => console.error('显示关于信息失败：', error)); } }
       ] }
     ]));
 

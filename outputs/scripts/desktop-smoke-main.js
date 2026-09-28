@@ -1,10 +1,20 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, dialog, Menu } = require('electron');
 
 const phase = process.env.SSMAT_SMOKE_PHASE || 'write';
 let loadAttempts = 0;
+let aboutMessage;
+const originalShowMessageBox = dialog.showMessageBox;
+dialog.showMessageBox = async (...args) => {
+  const options = args.at(-1);
+  if (options.title === '关于 材料数据计算工具') {
+    aboutMessage = options;
+    return { response: 0 };
+  }
+  return originalShowMessageBox(...args);
+};
 if (phase === 'first-run') {
   const originalLoad = BrowserWindow.prototype.loadURL;
   BrowserWindow.prototype.loadURL = function (...args) {
@@ -37,11 +47,31 @@ app.whenReady().then(async () => {
       ['撤销', '重做', '剪切', '复制', '粘贴', '全选'],
       ['重新加载', '实际大小', '放大', '缩小', '全屏'],
       ['最小化', '关闭'],
-      ['检查更新']
+      ['检查更新', '关于']
     ]);
     window.hide();
     await loaded(window);
     if (phase === 'first-run') assert.equal(loadAttempts, 3, '首次启动重试次数不正确');
+    const viewItems = menu.items[2].submenu.items;
+    const clickView = label => viewItems.find(item => item.label === label).click({}, window, window.webContents);
+    assert.deepEqual(['重新加载', '实际大小', '放大', '缩小'].map(label =>
+      viewItems.find(item => item.label === label).accelerator),
+    ['CommandOrControl+R', 'CommandOrControl+0', 'CommandOrControl+Plus', 'CommandOrControl+-']);
+    clickView('放大');
+    assert.equal(window.webContents.getZoomLevel(), 1, '放大未改变页面缩放');
+    clickView('缩小');
+    assert.equal(window.webContents.getZoomLevel(), 0, '缩小未恢复页面缩放');
+    clickView('放大');
+    clickView('实际大小');
+    assert.equal(window.webContents.getZoomLevel(), 0, '实际大小未重置缩放');
+    const reloaded = new Promise(resolve => window.webContents.once('did-finish-load', resolve));
+    clickView('重新加载');
+    await reloaded;
+    assert.equal(window.webContents.getURL(), 'ssmatcalc://app/index.html', '重新加载未恢复计算页面');
+    menu.items[4].submenu.items.find(item => item.label === '关于').click({}, window, window.webContents);
+    await Promise.resolve();
+    assert.match(aboutMessage.message, new RegExp(`v${app.getVersion().replaceAll('.', '\\.')}`));
+    assert.match(aboutMessage.detail, /离线估算材料可冲圆片数量/);
     const result = await window.webContents.executeJavaScript(`(() => {
       const input = { material: '201', thickness: 0.3, width: 600, weight: 100, mode: 'double', formula: 2 };
       if (!window.MaterialCalculator || !window.ParameterStore || !window.BatchData || !window.XLSX) throw new Error('页面脚本未加载');
@@ -58,7 +88,7 @@ app.whenReady().then(async () => {
       const sheet = window.ResultOutput.xlsx([calculated]);
       const workbook = window.XLSX.read(sheet, { type: 'array' });
       window.ResultOutput.preparePrint([calculated], '桌面验收', document.getElementById('print-area'));
-      return { title: document.title, revision: current.revision, quantity: calculated.quantity, batchQuantity: rows[0].result.quantity, xlsxSheets: workbook.SheetNames.length, history: window.HistoryStore.readRecords().length, origin: location.origin };
+      return { title: document.title, revision: current.revision, quantity: calculated.quantity, batchQuantity: rows[0].result.quantity, xlsxSheets: workbook.SheetNames.length, history: window.HistoryStore.readRecords().length, origin: location.origin, sectionNumbers: document.querySelectorAll('.section-number').length };
     })()`);
     assert.equal(result.title, '材料数据计算工具');
     assert.equal(result.revision, 1);
@@ -66,6 +96,7 @@ app.whenReady().then(async () => {
     assert.equal(result.quantity, result.batchQuantity);
     assert.equal(result.xlsxSheets, 1);
     assert.equal(result.origin, 'ssmatcalc://app');
+    assert.equal(result.sectionNumbers, 0, '页面标题仍显示数字序号');
     if (phase === 'write') {
       const download = new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('参数备份未触发下载')), 10000);

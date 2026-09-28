@@ -1,7 +1,7 @@
 {
   "name": "ss-mat-data-calc",
   "productName": "SS Material Data Calculator",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Offline material data calculator for Windows",
   "author": "Material Data Calculator contributors",
   "license": "MIT",
