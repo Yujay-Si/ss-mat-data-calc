@@ -24,6 +24,7 @@ if (!squirrelStartup) {
   app.setAppUserModelId('com.squirrel.SSMaterialDataCalc.SSMaterialDataCalc');
 
   app.whenReady().then(() => {
+    const checkForUpdates = startUpdateChecks();
     Menu.setApplicationMenu(Menu.buildFromTemplate([
       { label: '文件', submenu: [{ label: '退出', role: 'quit' }] },
       { label: '编辑', submenu: [
@@ -41,6 +42,9 @@ if (!squirrelStartup) {
       ] },
       { label: '窗口', submenu: [
         { label: '最小化', role: 'minimize' }, { label: '关闭', role: 'close' }
+      ] },
+      { label: '帮助', submenu: [
+        { label: '检查更新', click: () => { void checkForUpdates(); } }
       ] }
     ]));
 
@@ -102,7 +106,6 @@ if (!squirrelStartup) {
       dialog.showErrorBox('启动失败', error.message);
       app.quit();
     });
-    startUpdateChecks();
   });
 
   app.on('window-all-closed', () => app.quit());

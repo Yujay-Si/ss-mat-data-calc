@@ -31,12 +31,13 @@ app.whenReady().then(async () => {
     assert.ok(window, '桌面窗口未创建');
     const menu = Menu.getApplicationMenu();
     assert.ok(menu, '桌面菜单未创建');
-    assert.deepEqual(menu.items.map(item => item.label), ['文件', '编辑', '视图', '窗口']);
+    assert.deepEqual(menu.items.map(item => item.label), ['文件', '编辑', '视图', '窗口', '帮助']);
     assert.deepEqual(menu.items.map(item => item.submenu.items.filter(child => child.type !== 'separator').map(child => child.label)), [
       ['退出'],
       ['撤销', '重做', '剪切', '复制', '粘贴', '全选'],
       ['重新加载', '实际大小', '放大', '缩小', '全屏'],
-      ['最小化', '关闭']
+      ['最小化', '关闭'],
+      ['检查更新']
     ]);
     window.hide();
     await loaded(window);
