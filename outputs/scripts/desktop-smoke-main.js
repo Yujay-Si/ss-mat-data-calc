@@ -1,7 +1,18 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
+
+const phase = process.env.SSMAT_SMOKE_PHASE || 'write';
+let loadAttempts = 0;
+if (phase === 'first-run') {
+  const originalLoad = BrowserWindow.prototype.loadURL;
+  BrowserWindow.prototype.loadURL = function (...args) {
+    loadAttempts += 1;
+    if (loadAttempts <= 2) return Promise.reject(new Error('模拟安装后短暂的文件占用'));
+    return originalLoad.apply(this, args);
+  };
+}
 
 require('../../desktop/main.js');
 
@@ -18,9 +29,18 @@ app.whenReady().then(async () => {
   try {
     const window = BrowserWindow.getAllWindows()[0];
     assert.ok(window, '桌面窗口未创建');
+    const menu = Menu.getApplicationMenu();
+    assert.ok(menu, '桌面菜单未创建');
+    assert.deepEqual(menu.items.map(item => item.label), ['文件', '编辑', '视图', '窗口']);
+    assert.deepEqual(menu.items.map(item => item.submenu.items.filter(child => child.type !== 'separator').map(child => child.label)), [
+      ['退出'],
+      ['撤销', '重做', '剪切', '复制', '粘贴', '全选'],
+      ['重新加载', '实际大小', '放大', '缩小', '全屏'],
+      ['最小化', '关闭']
+    ]);
     window.hide();
     await loaded(window);
-    const phase = process.env.SSMAT_SMOKE_PHASE || 'write';
+    if (phase === 'first-run') assert.equal(loadAttempts, 3, '首次启动重试次数不正确');
     const result = await window.webContents.executeJavaScript(`(() => {
       const input = { material: '201', thickness: 0.3, width: 600, weight: 100, mode: 'double', formula: 2 };
       if (!window.MaterialCalculator || !window.ParameterStore || !window.BatchData || !window.XLSX) throw new Error('页面脚本未加载');

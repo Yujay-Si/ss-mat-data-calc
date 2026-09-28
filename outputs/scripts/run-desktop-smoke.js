@@ -10,8 +10,8 @@ const electron = require('electron');
 const entry = path.join(__dirname, 'desktop-smoke-main.js');
 
 try {
-  for (const phase of ['write', 'read']) {
-    const run = spawnSync(electron, [entry], {
+  for (const phase of ['write', 'read', 'first-run']) {
+    const run = spawnSync(electron, [entry, ...(phase === 'first-run' ? ['--squirrel-firstrun'] : [])], {
       cwd: path.resolve(__dirname, '..', '..'),
       env: { ...process.env, SSMAT_SMOKE_USER_DATA: profile, SSMAT_SMOKE_PHASE: phase },
       encoding: 'utf8',
